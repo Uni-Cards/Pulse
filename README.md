@@ -1,2 +1,156 @@
-# Pulse
+# Mobile Events SDK
+
 A Flutter SDK for tracking and managing events in mobile applications. This SDK provides a flexible and configurable way to collect, batch, and send events to a backend service.
+
+## Features
+
+- Event tracking with customizable payloads
+- Configurable event priorities
+- Automatic batching of events
+- Background sync capabilities
+- Offline support with local storage
+- Configurable retry mechanisms
+- Session management
+
+## Installation
+
+Add this to your package's `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  mobile_events_sdk: ^1.0.0
+```
+
+Then run:
+
+```bash
+flutter pub get
+```
+
+## Platform-specific Setup
+
+### For iOS Background Tasks
+
+For the background task to work on iOS, follow the documentation [here](https://github.com/fluttercommunity/flutter_workmanager/blob/main/IOS_SETUP.md).
+
+### For Android
+
+No extra setup is needed for Android.
+
+## Usage
+
+### Initialization
+
+```dart
+import 'package:mobile_events_sdk/mobile_events_sdk.dart';
+
+// Create an event context
+final eventContext = EventContext(
+  appAuthToken: 'your_auth_token', // Optional, can be null
+  deviceId: 'device_unique_id',
+  sessionId: 'current_session_id',
+  networkHeaders: {
+    'Content-Type': 'application/json',
+    // Add any additional headers needed
+  },
+);
+
+// Initialize the SDK
+final sdk = MobileEventsSdk(
+  appId: 'your_app_id',
+  eventContext: eventContext,
+);
+
+// Configure the SDK
+await sdk.init(
+  baseUrl: 'https://your-api-base-url.com',
+  configUrlEndpoint: '/config-endpoint',
+  config: MobileEventsSdkConfig(
+    fallbackEventPublishEndpoint: '/v1/events',
+    largestBatchSize: 50,
+    syncRetryDelayDuration: const Duration(seconds: 10),
+    maxDbSizeInMb: 5,
+  ),
+  debugMode: true, // Set to false in production
+);
+```
+
+### Tracking Events
+
+```dart
+// Track a simple event
+sdk.trackEvent(
+  eventName: 'button_click',
+  payload: {
+    'button_id': 'submit_button',
+    'screen': 'checkout',
+  },
+  priority: 1, // Higher priority events are sent sooner
+);
+
+// Track an error event
+sdk.trackEvent(
+  eventName: 'error_occurred',
+  payload: {
+    'error_code': 500,
+    'error_message': 'Server error',
+  },
+  priority: 0, // Highest priority
+);
+```
+
+### User Management
+
+```dart
+// Set user ID when user logs in
+sdk.setUserId('user123');
+
+// Clear user ID when user logs out
+sdk.logout();
+
+// Update event context if needed
+sdk.refreshEventContext(newEventContext);
+```
+
+## Configuration Options
+
+The `MobileEventsSdkConfig` class allows you to customize the SDK behavior:
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `fallbackEventPublishEndpoint` | Endpoint to use if config fetch fails | null |
+| `defaultEventPriority` | Default priority for events | 1 |
+| `logSourceName` | Source name for logs | "MESDK" |
+| `eventSyncNetworkTimeout` | Timeout for network requests | 10 seconds |
+| `largestBatchSize` | Maximum number of events in a batch | 100 |
+| `workerRetryPeriod` | Period between retry attempts | 10 seconds |
+| `syncRetryDelayDuration` | Delay between sync retries | 10 seconds (5 in debug) |
+| `maxDbSizeInMb` | Maximum size of local database | 10 MB |
+| `shouldUseLocalConfigAsFallback` | Use local config if remote fails | true |
+
+## Event Priorities
+
+Events can be assigned different priorities (0 being highest):
+
+- Priority 0: Critical events (errors, crashes)
+- Priority 1: Important events (purchases, sign-ups)
+- Priority 2: Standard events (page views, button clicks)
+- Priority 3+: Low priority events (analytics, metrics)
+
+Higher priority events are processed and sent before lower priority ones.
+
+## Notes
+
+- Event attributes only support primitive types: int, double, bool, null. Other types will be ignored.
+- The SDK adds certain attributes automatically and will replace them if set:
+  - `eventTime`
+  - `eventPriority`
+  - `eventSdkVersion`
+
+## Example
+
+See the [example](https://github.com/yourusername/mobile-events-sdk/tree/main/example) directory for a complete sample application.
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.

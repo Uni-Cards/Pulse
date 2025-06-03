@@ -1,0 +1,27 @@
+name: example
+description: "Example app for Mobile Events SDK"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.1 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  mobile_events_sdk:
+    path: ../
+  gap: ^3.0.1
+  http: ^1.2.2
+  uuid: ^4.5.1
+  shared_preferences: ^2.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
