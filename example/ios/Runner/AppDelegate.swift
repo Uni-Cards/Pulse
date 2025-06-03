@@ -10,6 +10,7 @@ import workmanager
   ) -> Bool {
       
     WorkmanagerPlugin.registerTask(withIdentifier: "mobile-events-sdk-bg-task")
+    WorkmanagerPlugin.registerTask(withIdentifier: "pulse-events-sdk-bg-task")
       
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)

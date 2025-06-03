@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart' as dio;
-import 'package:mobile_events_sdk/src/constants/constants.dart';
+import 'package:pulse_events_sdk/src/constants/constants.dart';
 
 import '../../interfaces/event_context.dart';
 import '../interfaces/network_service.dart';
@@ -86,7 +86,7 @@ class _Interceptor extends dio.Interceptor {
 
   @override
   void onRequest(dio.RequestOptions options, dio.RequestInterceptorHandler handler) {
-    final userAgent = '$appType MobileEventsSdk/${Constants.sdkVersion}($_osType; deviceId=${eventContext.deviceId})';
+    final userAgent = '$appType PulseEventsSdk/${Constants.sdkVersion}($_osType; deviceId=${eventContext.deviceId})';
 
     options.headers.addAll({
       'Content-Type': 'application/json',

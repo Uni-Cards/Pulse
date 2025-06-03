@@ -1,4 +1,4 @@
-// Copyright 2025 Mobile Events SDK Contributors
+// Copyright 2025 Pulse Events SDK Contributors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 
 import 'package:flutter/foundation.dart';
 
-class MobileEventsSdkConfig {
+class PulseEventsSdkConfig {
   final String? fallbackEventPublishEndpoint;
 
   final int defaultEventPriority;
@@ -28,10 +28,10 @@ class MobileEventsSdkConfig {
   final int maxDbSizeInMb;
   final bool shouldUseLocalConfigAsFallback;
 
-  MobileEventsSdkConfig({
+  PulseEventsSdkConfig({
     this.fallbackEventPublishEndpoint,
     this.defaultEventPriority = 1,
-    this.logSourceName = "MESDK",
+    this.logSourceName = "PulseSDK",
     this.eventSyncNetworkTimeout = const Duration(seconds: 10),
     this.largestBatchSize = 100,
     this.workerRetryPeriod = const Duration(seconds: 10),

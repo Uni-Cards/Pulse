@@ -1,5 +1,5 @@
 name: example
-description: "Example app for Mobile Events SDK"
+description: "Example app for Pulse Events SDK"
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.6
-  mobile_events_sdk:
+  pulse_events_sdk:
     path: ../
   gap: ^3.0.1
   http: ^1.2.2

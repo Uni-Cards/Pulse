@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
-import 'package:mobile_events_sdk/mobile_events_sdk.dart';
-import 'package:mobile_events_sdk/src/constants/constants.dart';
+import 'package:pulse_events_sdk/pulse_events_sdk.dart';
+import 'package:pulse_events_sdk/src/constants/constants.dart';
 
 import '../../db_models/sdk_config_data_model.dart';
-import '../../exceptions/mobile_events_exceptions.dart';
+import '../../exceptions/pulse_events_exceptions.dart';
 import '../../interfaces/events_service.dart';
 import '../db/hive_database_service.dart';
 import '../interfaces/database_service.dart';
@@ -56,7 +56,7 @@ class FrequencySyncEventService implements IEventsService {
 
       Log.i('$tag: init({...}) configured - sdk now ready to accept events!');
       _configurationStatus = Status.configured;
-    } on MobileEventsExceptions catch (e) {
+    } on PulseEventsExceptions catch (e) {
       Log.e('$tag: init({...}) failed with exception: $e');
       _configurationStatus = Status.failed;
       return false;
@@ -92,7 +92,7 @@ class FrequencySyncEventService implements IEventsService {
     _eventManager.trackEvent(
       eventName: eventName,
       payload: payload,
-      priority: priority ?? getIt<MobileEventsSdkConfig>().defaultEventPriority,
+      priority: priority ?? getIt<PulseEventsSdkConfig>().defaultEventPriority,
     );
   }
 

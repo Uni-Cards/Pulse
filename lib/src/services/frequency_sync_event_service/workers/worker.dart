@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'package:mobile_events_sdk/mobile_events_sdk.dart';
-import 'package:mobile_events_sdk/src/constants/constants.dart';
-import 'package:mobile_events_sdk/src/services/interfaces/database_service.dart';
-import 'package:mobile_events_sdk/src/services/network/dio_network_service.dart';
+import 'package:pulse_events_sdk/pulse_events_sdk.dart';
+import 'package:pulse_events_sdk/src/constants/constants.dart';
+import 'package:pulse_events_sdk/src/services/interfaces/database_service.dart';
+import 'package:pulse_events_sdk/src/services/network/dio_network_service.dart';
 
 import '../../../db_models/event_data_model.dart';
 import '../../../exceptions/internal_exceptions.dart';
@@ -130,7 +130,7 @@ class Worker {
 
   void _registerWorkerRetryTimer() {
     _workerRetryTimer?.cancel();
-    final retryPeriod = getIt<MobileEventsSdkConfig>().workerRetryPeriod;
+    final retryPeriod = getIt<PulseEventsSdkConfig>().workerRetryPeriod;
     _workerRetryTimer = Timer.periodic(retryPeriod, (_) => _syncToServer(whichEvents: EventStatus.failed));
   }
 
