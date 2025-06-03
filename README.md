@@ -1,4 +1,4 @@
-# Mobile Events SDK
+# Pulse Events SDK
 
 A Flutter SDK for tracking and managing events in mobile applications. This SDK provides a flexible and configurable way to collect, batch, and send events to a backend service.
 
@@ -18,7 +18,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  mobile_events_sdk: ^1.0.0
+  pulse_events_sdk: ^1.0.0
 ```
 
 Then run:
@@ -42,7 +42,7 @@ No extra setup is needed for Android.
 ### Initialization
 
 ```dart
-import 'package:mobile_events_sdk/mobile_events_sdk.dart';
+import 'package:pulse_events_sdk/pulse_events_sdk.dart';
 
 // Create an event context
 final eventContext = EventContext(
@@ -56,7 +56,7 @@ final eventContext = EventContext(
 );
 
 // Initialize the SDK
-final sdk = MobileEventsSdk(
+final sdk = PulseEventsSdk(
   appId: 'your_app_id',
   eventContext: eventContext,
 );
@@ -65,7 +65,7 @@ final sdk = MobileEventsSdk(
 await sdk.init(
   baseUrl: 'https://your-api-base-url.com',
   configUrlEndpoint: '/config-endpoint',
-  config: MobileEventsSdkConfig(
+  config: PulseEventsSdkConfig(
     fallbackEventPublishEndpoint: '/v1/events',
     largestBatchSize: 50,
     syncRetryDelayDuration: const Duration(seconds: 10),
@@ -114,13 +114,13 @@ sdk.refreshEventContext(newEventContext);
 
 ## Configuration Options
 
-The `MobileEventsSdkConfig` class allows you to customize the SDK behavior:
+The `PulseEventsSdkConfig` class allows you to customize the SDK behavior:
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `fallbackEventPublishEndpoint` | Endpoint to use if config fetch fails | null |
 | `defaultEventPriority` | Default priority for events | 1 |
-| `logSourceName` | Source name for logs | "MESDK" |
+| `logSourceName` | Source name for logs | "PulseSDK" |
 | `eventSyncNetworkTimeout` | Timeout for network requests | 10 seconds |
 | `largestBatchSize` | Maximum number of events in a batch | 100 |
 | `workerRetryPeriod` | Period between retry attempts | 10 seconds |
@@ -149,7 +149,7 @@ Higher priority events are processed and sent before lower priority ones.
 
 ## Example
 
-See the [example](https://github.com/yourusername/mobile-events-sdk/tree/main/example) directory for a complete sample application.
+See the [example](https://github.com/Uni-Cards/Pulse/tree/main/example) directory for a complete sample application.
 
 ## License
 

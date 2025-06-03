@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:mobile_events_sdk/mobile_events_sdk.dart';
+import 'package:pulse_events_sdk/pulse_events_sdk.dart';
 
 import 'auth_service.dart';
 import 'session_service.dart';
@@ -11,10 +11,10 @@ const kDeviceIdentifier = 'a-constant-identifier';
 class EventsService {
   static const tag = 'Events Service';
 
-  final MobileEventsSdk _mobileEventsSdk;
+  final PulseEventsSdk _pulseEventsSdk;
 
   EventsService._()
-      : _mobileEventsSdk = MobileEventsSdk(
+      : _pulseEventsSdk = PulseEventsSdk(
           appId: kAppId,
           eventContext: EventContext(
             sessionId: SessionService.instance.sessionId,
@@ -24,7 +24,7 @@ class EventsService {
               'fingerprint-id': kDeviceIdentifier,
               'Authorization': AuthService.instance.authToken,
               'session-id': SessionService.instance.sessionId,
-              'User-Agent': 'Mobile Events SDK',
+              'User-Agent': 'Pulse Events SDK',
               'Content-Type': 'application/json',
             },
           ),
@@ -47,10 +47,10 @@ class EventsService {
       final uri = Uri.parse('$baseUrl$configureEndpoint');
       log('$tag: valid uri: $uri');
 
-      return _mobileEventsSdk.init(
+      return _pulseEventsSdk.init(
         baseUrl: baseUrl,
         configUrlEndpoint: configureEndpoint,
-        config: MobileEventsSdkConfig(fallbackEventPublishEndpoint: '/v1/events'),
+        config: PulseEventsSdkConfig(fallbackEventPublishEndpoint: '/v1/events'),
         debugMode: debugMode,
       );
     } catch (e) {
@@ -60,11 +60,11 @@ class EventsService {
   }
 
   void setUserId(String userId) {
-    _mobileEventsSdk.setUserId(userId);
+    _pulseEventsSdk.setUserId(userId);
   }
 
   void logout() {
-    _mobileEventsSdk.logout();
+    _pulseEventsSdk.logout();
   }
 
   /// Generic events can be prioritized by the caller with the [priority] value
@@ -79,7 +79,7 @@ class EventsService {
       },
     );
 
-    return _mobileEventsSdk.trackEvent(
+    return _pulseEventsSdk.trackEvent(
       eventName: eventName,
       payload: payload,
       priority: priority,

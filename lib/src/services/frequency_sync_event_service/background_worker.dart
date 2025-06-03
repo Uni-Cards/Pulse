@@ -1,6 +1,6 @@
-import 'package:mobile_events_sdk/mobile_events_sdk.dart';
-import 'package:mobile_events_sdk/src/interfaces/event_context.dart';
-import 'package:mobile_events_sdk/src/services/db/hive_database_service.dart';
+import 'package:pulse_events_sdk/pulse_events_sdk.dart';
+import 'package:pulse_events_sdk/src/interfaces/event_context.dart';
+import 'package:pulse_events_sdk/src/services/db/hive_database_service.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../../constants/constants.dart';

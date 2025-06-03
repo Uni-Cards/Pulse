@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:mobile_events_sdk/mobile_events_sdk.dart';
-import 'package:mobile_events_sdk/src/services/network/dio_network_service.dart';
-import 'package:mobile_events_sdk/src/services/utils/extensions.dart';
+import 'package:pulse_events_sdk/pulse_events_sdk.dart';
+import 'package:pulse_events_sdk/src/services/network/dio_network_service.dart';
+import 'package:pulse_events_sdk/src/services/utils/extensions.dart';
 
 import '../../../db_models/event_data_model.dart';
 import '../../../exceptions/internal_exceptions.dart';
@@ -24,15 +24,15 @@ class WorkerService {
   }) : tag = '$tag: [WorkerService]';
 
   /// Makes network call to server to sync [eventsToSync] events.
-  /// The network call is timed out after [MobileEventsSdkConfig.eventSyncNetworkTimeout] duration.
+  /// The network call is timed out after [PulseEventsSdkConfig.eventSyncNetworkTimeout] duration.
   ///
   /// No matter how many events were passed in [eventsToSync],
-  /// this method respects the [MobileEventsSdkConfig.largestBatchSize] while doing the network call
+  /// this method respects the [PulseEventsSdkConfig.largestBatchSize] while doing the network call
   /// Multiple parallel network calls could be made internally, each request with the allowed max batch size
   ///
   /// If [retry] is true,
-  /// each sync network calls are retried upto a max of [MobileEventsSdkConfig.syncMaxRetry] times before returning a result and,
-  /// each retries are spaced out by [MobileEventsSdkConfig.syncRetryDelayDuration] duration
+  /// each sync network calls are retried upto a max of [PulseEventsSdkConfig.syncMaxRetry] times before returning a result and,
+  /// each retries are spaced out by [PulseEventsSdkConfig.syncRetryDelayDuration] duration
   ///
   /// Returns the success and failure events
   Future<EventSyncResult> syncToServer({
@@ -45,7 +45,7 @@ class WorkerService {
     Log.i('$tag: syncToServer($syncToServerId) invoked with ${eventsToSync.length} events, and with retry: $retry');
 
     /// Split [eventsToSync] into chunks of [maxBatchSize] elements
-    final eventsBatches = eventsToSync.foldBy(getIt<MobileEventsSdkConfig>().largestBatchSize);
+    final eventsBatches = eventsToSync.foldBy(getIt<PulseEventsSdkConfig>().largestBatchSize);
 
     Log.i('$tag: syncToServer($syncToServerId) created ${eventsBatches.length} batches, starting parallel sync');
 
@@ -83,7 +83,7 @@ class WorkerService {
     return eventSyncResult;
   }
 
-  /// Make sure [eventsToSync] has max of [MobileEventsSdkConfig.largestBatchSize] events, otherwise
+  /// Make sure [eventsToSync] has max of [PulseEventsSdkConfig.largestBatchSize] events, otherwise
   /// this method would throw [TooManyEventsToSync] exception
   ///
   /// [retry] determines if multiple retries would be made
@@ -96,7 +96,7 @@ class WorkerService {
     int retryCount = 1,
   }) async {
     if (_hasHalted) return EventSyncResult.halted();
-    final config = getIt<MobileEventsSdkConfig>();
+    final config = getIt<PulseEventsSdkConfig>();
 
     // validate batch size
     if (batch.length > config.largestBatchSize) throw TooManyEventsToSync(batch.length);

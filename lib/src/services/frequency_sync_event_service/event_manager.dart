@@ -49,7 +49,7 @@ class EventManager with WidgetsBindingObserver {
   }) async {
     WidgetsBinding.instance.addObserver(this);
 
-    final sdkConfig = getIt<MobileEventsSdkConfig>();
+    final sdkConfig = getIt<PulseEventsSdkConfig>();
 
     // initialize database
     await getIt<IDatabaseService>().init();

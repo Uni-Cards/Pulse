@@ -19,7 +19,7 @@ class EventKeyConstants {
 class BackgroundTaskConstants {
   BackgroundTaskConstants._();
 
-  static const taskIdentifier = 'mobile-events-sdk-bg-task';
+  static const taskIdentifier = 'pulse-events-sdk-bg-task';
   static const taskName = 'Events Sync Task';
   static const taskTag = 'Events Sync Task';
 

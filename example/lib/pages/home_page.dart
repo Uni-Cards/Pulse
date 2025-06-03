@@ -12,7 +12,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: SpecialAppBar(
-        text: 'Mobile Events SDK Example App',
+        text: 'Pulse Events SDK Example App',
       ),
       body: const Center(
         child: Column(

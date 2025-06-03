@@ -1,6 +1,6 @@
 import 'dart:developer' as dev;
 
-import 'package:mobile_events_sdk/mobile_events_sdk.dart';
+import 'package:pulse_events_sdk/pulse_events_sdk.dart';
 
 class Log {
   static bool _ignoreLogging = true;
@@ -28,7 +28,7 @@ class Log {
       sequenceNumber: sn,
       error: error,
       stackTrace: stackTrace ?? StackTrace.current,
-      name: getIt<MobileEventsSdkConfig>().logSourceName,
+      name: getIt<PulseEventsSdkConfig>().logSourceName,
       time: time,
     );
   }
@@ -42,7 +42,7 @@ class Log {
     dev.log(
       _formatMessage(message, time, sn),
       sequenceNumber: sn,
-      name: getIt<MobileEventsSdkConfig>().logSourceName,
+      name: getIt<PulseEventsSdkConfig>().logSourceName,
       time: time,
     );
   }

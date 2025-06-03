@@ -1,4 +1,4 @@
-// Copyright 2025 Mobile Events SDK Contributors
+// Copyright 2025 Pulse Events SDK Contributors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'package:mobile_events_sdk/src/config/mobile_events_sdk_config.dart';
+import 'package:pulse_events_sdk/src/config/pulse_events_sdk_config.dart';
 
 import '../interfaces/events_service.dart';
 import '../interfaces/event_context.dart';
@@ -22,12 +22,12 @@ import 'package:get_it/get_it.dart';
 
 final getIt = GetIt.I;
 
-class MobileEventsSdk {
+class PulseEventsSdk {
   final EventContext eventContext;
   final String appId;
   final IEventsService _eventService;
 
-  MobileEventsSdk({
+  PulseEventsSdk({
     required this.appId,
     required this.eventContext,
   }) : _eventService = FrequencySyncEventService();
@@ -35,14 +35,14 @@ class MobileEventsSdk {
   Future<bool> init({
     required String baseUrl,
     required String configUrlEndpoint,
-    required MobileEventsSdkConfig config,
+    required PulseEventsSdkConfig config,
     bool debugMode = false,
   }) async {
     // prepare logging
     Log.debugMode = debugMode;
 
-    if (!getIt.isRegistered<MobileEventsSdkConfig>()) {
-      getIt.registerSingleton<MobileEventsSdkConfig>(config);
+    if (!getIt.isRegistered<PulseEventsSdkConfig>()) {
+      getIt.registerSingleton<PulseEventsSdkConfig>(config);
     }
 
     // init event service
