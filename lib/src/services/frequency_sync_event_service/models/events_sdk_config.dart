@@ -30,5 +30,5 @@ class EventsSdkProcessingPolicy {
     this.priorities = const [],
   });
 
-  factory EventsSdkProcessingPolicy.fromJson(Map<String, dynamic> json) => _$EventsSdkConfigFromJson(json);
+  factory EventsSdkProcessingPolicy.fromJson(Map<String, dynamic> json) => _$EventsSdkProcessingPolicyFromJson(json);
 }
