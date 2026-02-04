@@ -20,7 +20,6 @@ import 'package:uuid/uuid.dart';
 import '../../constants/constants.dart';
 import '../../db_models/event_data_model.dart';
 import '../frequency_sync_event_service/models/events_priority_config.dart';
-import '../log/log.dart';
 
 class Utils {
   static const tag = 'Utils';
@@ -40,21 +39,7 @@ class Utils {
   /// Only simple primitive data types are allowed
   /// Refer here for primitive data types supported in Dart: https://dart.dev/language/built-in-types
   static bool isTypeAllowed(Type type) {
-    // Numbers (int, double)
-    if (type == int || type == double) return true;
-
-    // Strings (String)
-    if (type == String) return true;
-
-    // Booleans (bool)
-    if (type == bool) return true;
-
-    // null (Null)
-    if (type == Null) return true;
-
-    Log.i('$tag: type: $type is ignored and will NOT be included in the payload attribute');
-
-    return false;
+    return true;
   }
 
   static String generateEventId() => _uuid.v8();
@@ -73,18 +58,60 @@ class Utils {
     required Map<String, dynamic> payload,
     required int eventPriority,
   }) {
-    final preparedPayload = Map.fromEntries(
-      payload.entries.where((e) => Utils.isTypeAllowed(e.value.runtimeType)),
-    );
+    // Deep-convert to JSON-safe structure so Hive never receives custom objects
+    final dynamic sanitizedDynamic = sanitizeForJson(payload);
+    final Map<String, dynamic> sanitized =
+        sanitizedDynamic is Map<String, dynamic> ? sanitizedDynamic : <String, dynamic>{};
 
     return {
-      ...preparedPayload,
+      ...sanitized,
 
       // add default payloads
       EventKeyConstants.eventTime: DateTime.now().toString(),
       EventKeyConstants.eventPriority: eventPriority,
       EventKeyConstants.eventSdkVersion: Constants.sdkVersion,
     };
+  }
+
+  /// Recursively converts any Dart object to JSON-safe primitives:
+  /// - null, num, String, bool are kept as-is
+  /// - DateTime -> ISO8601 string
+  /// - Uri -> string
+  /// - Iterable -> List with elements sanitized
+  /// - Map -> Map<String, dynamic> with values sanitized; non-string keys are stringified
+  /// - Objects with toJson() -> sanitize result of toJson()
+  /// - Fallback -> value.toString()
+  static dynamic sanitizeForJson(dynamic value) {
+    if (value == null || value is num || value is String || value is bool) return value;
+    if (value is DateTime) return value.toIso8601String();
+    if (value is Uri) return value.toString();
+
+    if (value is Iterable) {
+      return value.map((e) => sanitizeForJson(e)).toList();
+    }
+
+    if (value is Map) {
+      final result = <String, dynamic>{};
+      value.forEach((key, val) {
+        final String stringKey = key is String ? key : key?.toString() ?? '';
+        result[stringKey] = sanitizeForJson(val);
+      });
+      return result;
+    }
+
+    // Attempt to use toJson if available
+    try {
+      final dynamic jsonValue = (value as dynamic).toJson();
+      return sanitizeForJson(jsonValue);
+    } catch (_) {
+      // ignore and fallback below
+    }
+
+    // Byte arrays are fine in JSON as int lists
+    if (value is List<int>) return value;
+
+    // Fallback to string representation
+    return value.toString();
   }
 
   // helper events
