@@ -35,7 +35,7 @@ class PulseEventsSdkConfig {
     this.eventSyncNetworkTimeout = const Duration(seconds: 10),
     this.largestBatchSize = 100,
     this.workerRetryPeriod = const Duration(seconds: 10),
-    this.syncRetryDelayDuration = kDebugMode ? const Duration(seconds: 5) : const Duration(seconds: 10),
+    this.syncRetryDelayDuration = !kReleaseMode ? const Duration(seconds: 5) : const Duration(seconds: 10),
     this.maxDbSizeInMb = 10,
     this.shouldUseLocalConfigAsFallback = true,
   });

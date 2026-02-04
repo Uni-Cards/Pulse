@@ -37,8 +37,8 @@ class BackgroundTaskConstants {
   static const taskName = 'Events Sync Task';
   static const taskTag = 'Events Sync Task';
 
-  static const initialDelay = kDebugMode ? Duration(minutes: 10) : Duration(minutes: 30);
-  static const backOffPolicyDelay = kDebugMode ? Duration(minutes: 1) : Duration(minutes: 10);
+  static const initialDelay = !kReleaseMode ? Duration(minutes: 10) : Duration(minutes: 30);
+  static const backOffPolicyDelay = !kReleaseMode ? Duration(minutes: 1) : Duration(minutes: 10);
 
   static const databaseIdKey = 'databaseId';
   static const baseUrlKey = 'baseUrl';
