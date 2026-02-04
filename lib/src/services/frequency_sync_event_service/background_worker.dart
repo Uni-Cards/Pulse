@@ -13,14 +13,13 @@
 // limitations under the License.
 
 import 'package:pulse_events_sdk/pulse_events_sdk.dart';
-import 'package:pulse_events_sdk/src/interfaces/event_context.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pulse_events_sdk/src/services/db/hive_database_service.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../../constants/constants.dart';
 import '../../db_models/event_data_model.dart';
 import '../../db_models/sdk_config_data_model.dart';
-import '../../exceptions/internal_exceptions.dart';
 import '../log/log.dart';
 import '../network/dio_network_service.dart';
 import '../utils/utils.dart';
@@ -45,6 +44,49 @@ void callbackDispatcher() {
       final debugMode = inputData[BackgroundTaskConstants.debugMode] as bool;
       final appType = inputData[BackgroundTaskConstants.appType] as String;
 
+      // ensure background isolate has required singletons in GetIt
+      // 1) SDK config (reconstruct from inputData if supplied)
+      if (!getIt.isRegistered<PulseEventsSdkConfig>()) {
+        final largestBatchSize = inputData[BackgroundTaskConstants.cfgLargestBatchSize] as int?;
+        final eventSyncTimeoutMs = inputData[BackgroundTaskConstants.cfgEventSyncNetworkTimeoutMs] as int?;
+        final retryDelayMs = inputData[BackgroundTaskConstants.cfgSyncRetryDelayDurationMs] as int?;
+        final workerRetryMs = inputData[BackgroundTaskConstants.cfgWorkerRetryPeriodMs] as int?;
+
+        final cfg = PulseEventsSdkConfig(
+          largestBatchSize: largestBatchSize ?? 100,
+          eventSyncNetworkTimeout: Duration(
+            milliseconds: eventSyncTimeoutMs ?? const Duration(seconds: 10).inMilliseconds,
+          ),
+          syncRetryDelayDuration: Duration(
+            milliseconds: retryDelayMs ?? (!kReleaseMode ? 5000 : 10000),
+          ),
+          workerRetryPeriod: Duration(
+            milliseconds: workerRetryMs ?? const Duration(seconds: 10).inMilliseconds,
+          ),
+        );
+
+        getIt.registerSingleton<PulseEventsSdkConfig>(cfg);
+      }
+
+      // 2) Network service with the provided event context
+      final bgEventContext = EventContext(
+        appAuthToken: appAuthToken,
+        deviceId: deviceId,
+        sessionId: sessionId,
+      );
+
+      final dioService = DioNetworkService(
+        appType: appType,
+        baseUrl: baseUrl,
+        eventContext: bgEventContext,
+      );
+
+      // Re-register each run to keep headers fresh
+      if (getIt.isRegistered<DioNetworkServiceType>()) {
+        getIt.unregister<DioNetworkServiceType>();
+      }
+      getIt.registerSingleton<DioNetworkServiceType>(dioService);
+
       // prepare database service
       final databaseService = HiveDatabaseService(
         databaseId: databaseId,
@@ -55,15 +97,7 @@ void callbackDispatcher() {
       // initialize dlq worker
       final dlqWorker = DLQWorker(
         databaseService: databaseService,
-        networkService: DioNetworkService(
-          appType: appType,
-          baseUrl: baseUrl,
-          eventContext: EventContext(
-            appAuthToken: appAuthToken,
-            deviceId: deviceId,
-            sessionId: sessionId,
-          ),
-        ),
+        networkService: dioService,
       );
 
       // init core db entity & read the sdk config data model
@@ -148,6 +182,8 @@ class BackgroundWorker {
     // if we don't have an active auth token, there is no point registering a background worker
     if (eventContext.appAuthToken == null) return;
 
+    final config = getIt<PulseEventsSdkConfig>();
+
     final inputData = <String, dynamic>{
       BackgroundTaskConstants.baseUrlKey: baseUrl,
       BackgroundTaskConstants.databaseIdKey: appId,
@@ -157,6 +193,11 @@ class BackgroundWorker {
       BackgroundTaskConstants.sessionIdKey: eventContext.sessionId,
       BackgroundTaskConstants.debugMode: debugMode,
       BackgroundTaskConstants.appType: appId,
+      // pass runtime SDK config for background isolate reconstruction
+      BackgroundTaskConstants.cfgLargestBatchSize: config.largestBatchSize,
+      BackgroundTaskConstants.cfgEventSyncNetworkTimeoutMs: config.eventSyncNetworkTimeout.inMilliseconds,
+      BackgroundTaskConstants.cfgSyncRetryDelayDurationMs: config.syncRetryDelayDuration.inMilliseconds,
+      BackgroundTaskConstants.cfgWorkerRetryPeriodMs: config.workerRetryPeriod.inMilliseconds,
     };
 
     try {

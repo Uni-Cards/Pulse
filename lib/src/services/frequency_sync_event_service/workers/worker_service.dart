@@ -21,7 +21,6 @@ import 'package:pulse_events_sdk/src/services/network/dio_network_service.dart';
 import 'package:pulse_events_sdk/src/services/utils/extensions.dart';
 
 import '../../../db_models/event_data_model.dart';
-import '../../../exceptions/internal_exceptions.dart';
 import '../../log/log.dart';
 import '../../utils/utils.dart';
 import '../models/event_sync_result.dart';
