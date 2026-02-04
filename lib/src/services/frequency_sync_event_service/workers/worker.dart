@@ -19,7 +19,6 @@ import 'package:pulse_events_sdk/src/services/interfaces/database_service.dart';
 import 'package:pulse_events_sdk/src/services/network/dio_network_service.dart';
 
 import '../../../db_models/event_data_model.dart';
-import '../../../exceptions/internal_exceptions.dart';
 import '../../log/log.dart';
 import '../../synchronization/lock.dart';
 import '../../utils/utils.dart';
@@ -111,7 +110,8 @@ class Worker {
       final eventsToSync = queryEventsFromDB(_workerEntityId, filter: (o) => o.status == whichEvents);
 
       if (eventsToSync.isEmpty) {
-        throw NothingToSync(whichEvents);
+        Log.i('$tag: no events to sync for event status: $whichEvents');
+        return;
       }
 
       Log.i(
@@ -279,7 +279,7 @@ class Worker {
       final pendingSyncEvents = queryEventsFromDB(_workerEntityId, filter: (e) => e.status == EventStatus.pending);
 
       if (pendingSyncEvents.isEmpty) {
-        throw NothingToSync(EventStatus.pending);
+        Log.i('$tag: _prepareAndTrySync() found no events for preparation from event status: ${EventStatus.pending}');
       }
 
       Log.i('$tag: _prepareAndTrySync() total ${pendingSyncEvents.length} found which will be marked as readyToSync');
@@ -293,8 +293,6 @@ class Worker {
       }
 
       await databaseService.putAll<EventDataModel>(entityId: _workerEntityId, entries: eventsToUpdate);
-    } on NothingToSync catch (e) {
-      Log.i('$tag: _prepareAndTrySync() found no events for preparation from event status: ${e.eventStatus}');
     } catch (e) {
       Log.e('$tag: _prepareAndTrySync() failed with error: $e');
     } finally {
