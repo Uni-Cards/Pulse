@@ -47,6 +47,14 @@ class Worker {
   final String _workerEntityId;
   final void Function(int? statusCode)? onIrreversibleError;
 
+  // Readiness gate to ensure DB entity is initialized before access
+  final Completer<void> _ready = Completer<void>();
+  Future<void> _awaitReady() async {
+    if (!_ready.isCompleted) {
+      await _ready.future;
+    }
+  }
+
   Worker({
     required this.processingPolicy,
     this.onIrreversibleError,
@@ -67,6 +75,10 @@ class Worker {
   /// and sets up timers for batch processing
   Future<void> initialize() async {
     await databaseService.initEntity<EventDataModel>(entityId: _workerEntityId);
+
+    if (!_ready.isCompleted) {
+      _ready.complete();
+    }
 
     Log.i('$tag: entity id: $_workerEntityId is successfully initialized');
 
@@ -92,6 +104,9 @@ class Worker {
 
     try {
       Log.i('$tag: _syncToServer(for: $whichEvents) invoked - attempting to sync events');
+
+      // Ensure readiness before attempting to read/write from DB
+      await _awaitReady();
 
       final eventsToSync = queryEventsFromDB(_workerEntityId, filter: (o) => o.status == whichEvents);
 
@@ -154,6 +169,8 @@ class Worker {
     required Map<String, dynamic> payload,
     String? userId,
   }) async {
+    // Wait until entity is initialized before writing
+    await _awaitReady();
     final eventId = Utils.generateEventId();
 
     Log.i('$tag: trackEvent(eventName: $eventName) invoked, recording event with eventId: $eventId');
@@ -184,6 +201,9 @@ class Worker {
 
     // wait if lock is acquired - meaning we are preparing events for sycning
     await _prepareSyncLock.locked;
+
+    // Ensure readiness before attempting to read from DB
+    await _awaitReady();
 
     final hasMetBatchSize = databaseService
             .getAll<EventDataModel>(entityId: _workerEntityId)
@@ -252,6 +272,9 @@ class Worker {
 
     try {
       Log.i('$tag: _prepareAndTrySync() invoked - preparing events to sync');
+
+      // Ensure readiness before attempting to read/write from DB
+      await _awaitReady();
 
       final pendingSyncEvents = queryEventsFromDB(_workerEntityId, filter: (e) => e.status == EventStatus.pending);
 
