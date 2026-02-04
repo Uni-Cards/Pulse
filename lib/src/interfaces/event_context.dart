@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import '../exceptions/pulse_events_exceptions.dart';
+
 abstract class IEventContext {
   String? get appAuthToken;
   String get deviceId;
@@ -37,5 +39,43 @@ class EventContext implements IEventContext {
     required this.deviceId,
     required this.sessionId,
     this.networkHeaders,
-  });
+  }) {
+    _validate();
+  }
+
+  /// Validates the event context parameters - only check null/empty
+  void _validate() {
+    if (deviceId.isEmpty) {
+      throw InvalidEventContext('Device ID cannot be empty');
+    }
+    
+    if (sessionId.isEmpty) {
+      throw InvalidEventContext('Session ID cannot be empty');
+    }
+    
+    // Validate auth token if provided
+    if (appAuthToken != null && appAuthToken!.isEmpty) {
+      throw InvalidEventContext('Auth token cannot be empty if provided');
+    }
+  }
+  
+  /// Creates a copy of the event context with updated values
+  EventContext copyWith({
+    String? appAuthToken,
+    String? deviceId,
+    String? sessionId,
+    Map<String, dynamic>? networkHeaders,
+  }) {
+    return EventContext(
+      appAuthToken: appAuthToken ?? this.appAuthToken,
+      deviceId: deviceId ?? this.deviceId,
+      sessionId: sessionId ?? this.sessionId,
+      networkHeaders: networkHeaders ?? this.networkHeaders,
+    );
+  }
+  
+  @override
+  String toString() {
+    return 'EventContext(deviceId: $deviceId, sessionId: $sessionId, hasAuthToken: ${appAuthToken != null}, headerCount: ${networkHeaders?.length ?? 0})';
+  }
 }

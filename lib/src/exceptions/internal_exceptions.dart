@@ -14,18 +14,74 @@
 
 import '../db_models/event_data_model.dart';
 
-abstract class PulseEventsInternalExceptions implements Exception {}
+abstract class PulseEventsInternalExceptions implements Exception {
+  final String message;
+  final String? code;
+
+  /// Static callback for reporting internal exceptions to external monitoring
+  static Function(String message, dynamic error, StackTrace? stackTrace)? onInternalError;
+
+  PulseEventsInternalExceptions(this.message, {this.code}) {
+    // Automatically report critical internal exceptions to external monitoring
+    onInternalError?.call('Internal SDK Exception: $message', this, StackTrace.current);
+  }
+
+  @override
+  String toString() => 'PulseEventsInternalException: $message${code != null ? ' (Code: $code)' : ''}';
+}
 
 class NothingToSync extends PulseEventsInternalExceptions {
   final EventStatus eventStatus;
-  NothingToSync(this.eventStatus);
+  NothingToSync(this.eventStatus) : super('No events found to sync for status: $eventStatus', code: 'NOTHING_TO_SYNC');
 }
 
 class TooManyEventsToSync extends PulseEventsInternalExceptions {
   final int size;
-  TooManyEventsToSync(this.size);
+  TooManyEventsToSync(this.size) : super('Too many events to sync: $size', code: 'TOO_MANY_EVENTS');
 }
 
-class AllSyncInvokedOnActiveWorker extends PulseEventsInternalExceptions {}
+class AllSyncInvokedOnActiveWorker extends PulseEventsInternalExceptions {
+  AllSyncInvokedOnActiveWorker() : super('Cannot invoke sync all on active worker', code: 'SYNC_ON_ACTIVE_WORKER');
+}
 
-class BackgroundTaskInvokedWithEmptyInputData extends PulseEventsInternalExceptions {}
+class BackgroundTaskInvokedWithEmptyInputData extends PulseEventsInternalExceptions {
+  BackgroundTaskInvokedWithEmptyInputData()
+      : super('Background task invoked with empty input data', code: 'EMPTY_BACKGROUND_DATA');
+}
+
+class DatabaseCorruptionException extends PulseEventsInternalExceptions {
+  final String entityId;
+  DatabaseCorruptionException(this.entityId)
+      : super('Database corruption detected for entity: $entityId', code: 'DATABASE_CORRUPTION');
+}
+
+class LockAcquisitionTimeoutException extends PulseEventsInternalExceptions {
+  final String lockName;
+  final Duration timeout;
+  LockAcquisitionTimeoutException(this.lockName, this.timeout)
+      : super('Failed to acquire lock "$lockName" within ${timeout.inSeconds}s', code: 'LOCK_TIMEOUT');
+}
+
+class WorkerStateException extends PulseEventsInternalExceptions {
+  final String workerTag;
+  final String expectedState;
+  final String actualState;
+  WorkerStateException(this.workerTag, this.expectedState, this.actualState)
+      : super('Worker $workerTag expected to be in $expectedState state but was in $actualState',
+            code: 'INVALID_WORKER_STATE');
+}
+
+class EventProcessingException extends PulseEventsInternalExceptions {
+  final String eventId;
+  final dynamic originalError;
+  EventProcessingException(this.eventId, this.originalError)
+      : super('Failed to process event $eventId: $originalError', code: 'EVENT_PROCESSING_FAILED');
+}
+
+class ConfigurationMismatchException extends PulseEventsInternalExceptions {
+  final String field;
+  final dynamic expected;
+  final dynamic actual;
+  ConfigurationMismatchException(this.field, this.expected, this.actual)
+      : super('Configuration mismatch for $field: expected $expected, got $actual', code: 'CONFIG_MISMATCH');
+}

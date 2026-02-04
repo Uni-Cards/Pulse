@@ -18,6 +18,7 @@ import 'package:dio/dio.dart' as dio;
 import 'package:pulse_events_sdk/src/constants/constants.dart';
 
 import '../../interfaces/event_context.dart';
+import '../../exceptions/pulse_events_exceptions.dart';
 import '../interfaces/network_service.dart';
 import '../log/log.dart';
 
@@ -54,14 +55,20 @@ class DioNetworkService implements DioNetworkServiceType {
     Log.i('$tag: get(...) request with endpoint: $endpoint');
 
     try {
+      if (endpoint.isEmpty) {
+        throw NetworkException('Endpoint cannot be empty');
+      }
+
       final response = await _dio.get('$baseUrl$endpoint');
 
       Log.i('$tag: get(...) at endpoint: $endpoint returned response: $response');
 
       return response;
     } on dio.DioException catch (error) {
-      Log.e('$tag: get(...) at endpoint: $endpoint returned error: $error');
-      return error.response;
+      return _handleDioException('GET', endpoint, error);
+    } catch (e) {
+      Log.e('$tag: Unexpected error during GET $endpoint: $e');
+      throw NetworkException('Network error', originalError: e);
     }
   }
 
@@ -71,20 +78,69 @@ class DioNetworkService implements DioNetworkServiceType {
     Map<String, dynamic> body, {
     dio.CancelToken? cancelToken,
   }) async {
-    // post request must require an authentication token
-    if (eventContext.appAuthToken == null) return null;
-
-    Log.i('$tag: post(...) request with endpoint: $endpoint');
+    Log.i('$tag: POST request to endpoint: $endpoint');
 
     try {
-      final response = await _dio.post('$baseUrl$endpoint', data: body, cancelToken: cancelToken);
+      // Validate authentication
+      if (eventContext.appAuthToken == null) {
+        return null;
+      }
 
-      Log.i('$tag: post(...) at endpoint: $endpoint returned response: $response');
+      if (endpoint.isEmpty) {
+        throw NetworkException('Endpoint cannot be empty');
+      }
 
+      if (body.isEmpty) {
+        throw NetworkException('Request body cannot be empty');
+      }
+
+      final response = await _dio.post(
+        '$baseUrl$endpoint',
+        data: body,
+        cancelToken: cancelToken,
+      );
+
+      Log.i('$tag: POST $endpoint completed - Status: ${response.statusCode}');
       return response;
     } on dio.DioException catch (error) {
-      Log.e('$tag: post(...) at endpoint: $endpoint threw error: $error');
+      return _handleDioException('POST', endpoint, error);
+    } catch (e) {
+      Log.e('$tag: Unexpected error during POST $endpoint: $e');
+      throw NetworkException('Network error', originalError: e);
+    }
+  }
+
+  /// Handles Dio exceptions with basic error mapping
+  dio.Response? _handleDioException(String method, String endpoint, dio.DioException error) {
+    Log.e('$tag: $method $endpoint failed: ${error.message}');
+
+    // Return the response for further processing if available
+    if (error.response != null) {
       return error.response;
+    }
+
+    // For connection issues, throw network exception
+    switch (error.type) {
+      case dio.DioExceptionType.connectionTimeout:
+      case dio.DioExceptionType.sendTimeout:
+      case dio.DioExceptionType.receiveTimeout:
+        throw NetworkException('Request timeout', originalError: error);
+
+      case dio.DioExceptionType.connectionError:
+        throw NetworkException('Connection error', originalError: error);
+
+      default:
+        throw NetworkException('Network error: ${error.message}', originalError: error);
+    }
+  }
+
+  /// Disposes resources
+  void dispose() {
+    try {
+      _dio.close();
+      Log.i('$tag: Network service disposed');
+    } catch (e) {
+      Log.e('$tag: Error disposing network service: $e');
     }
   }
 }
