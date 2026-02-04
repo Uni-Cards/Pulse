@@ -49,6 +49,12 @@ class BackgroundTaskConstants {
   static const debugMode = 'debugMode';
   static const appType = 'appType';
 
+  // Config keys - used to pass runtime SDK config to background isolate
+  static const cfgLargestBatchSize = 'cfgLargestBatchSize';
+  static const cfgEventSyncNetworkTimeoutMs = 'cfgEventSyncNetworkTimeoutMs';
+  static const cfgSyncRetryDelayDurationMs = 'cfgSyncRetryDelayDurationMs';
+  static const cfgWorkerRetryPeriodMs = 'cfgWorkerRetryPeriodMs';
+
   static const debugBackgroundTaskEventName = 'BackgroundTaskTriggered';
 
   static const eventPayloadOS = 'platform.operatingSystem';
