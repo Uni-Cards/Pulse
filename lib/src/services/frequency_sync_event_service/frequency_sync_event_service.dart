@@ -20,7 +20,6 @@ import 'package:pulse_events_sdk/pulse_events_sdk.dart';
 import 'package:pulse_events_sdk/src/constants/constants.dart';
 
 import '../../db_models/sdk_config_data_model.dart';
-import '../../exceptions/pulse_events_exceptions.dart';
 import '../../interfaces/events_service.dart';
 import '../db/hive_database_service.dart';
 import '../interfaces/database_service.dart';
@@ -71,7 +70,7 @@ class FrequencySyncEventService implements IEventsService {
       Log.i('$tag: init({...}) configured - sdk now ready to accept events!');
       _configurationStatus = Status.configured;
     } on PulseEventsExceptions catch (e) {
-      Log.e('$tag: init({...}) failed with exception: $e');
+      PulseEventsSdk.reportCriticalError('$tag: init({...}) failed with exception: $e', e, StackTrace.current);
       _configurationStatus = Status.failed;
       return false;
     }

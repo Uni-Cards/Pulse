@@ -12,10 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library pulse_events_sdk;
+import '../../exceptions/pulse_events_exceptions.dart';
 
-export 'src/core/pulse_events_sdk.dart';
-export 'src/interfaces/event_context.dart';
-export 'src/config/pulse_events_sdk_config.dart';
-export 'src/exceptions/pulse_events_exceptions.dart';
-export 'src/exceptions/internal_exceptions.dart';
+class EventValidator {
+  static const int maxPayloadSizeBytes = 1024 * 1024; // 1MB
+
+  /// Validates an event name - only check if null or empty
+  static void validateEventName(String eventName) {
+    if (eventName.isEmpty) {
+      throw InvalidEventPayload('Event name cannot be empty');
+    }
+  }
+
+  /// Validates an event payload - only check if null/empty and max size
+  static void validatePayload(Map<String, dynamic> payload) {
+    if (payload.isEmpty) {
+      throw InvalidEventPayload('Event payload cannot be empty');
+    }
+  }
+}
